@@ -1,0 +1,52 @@
+name: CoinBox CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+  pull_request:
+
+jobs:
+  test-and-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Vérifier le code source du dépôt
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Installer les dépendances
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Exécuter les tests unitaires
+      - name: Run tests
+        run: |
+          pytest --junitxml=test-results.xml
+
+      # Générer un rapport de couverture de code
+      - name: Generate coverage report
+        run: |
+          pytest --cov=coinbox --cov-report=html
+
+      # Sauvegarder le rapport de couverture comme artefact
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+  # Ajouter un job facultatif pour publier la documentation (si nécessaire)
+  # publish-docs:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy documentation
+  #       run: your-deployment-steps-here
